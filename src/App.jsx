@@ -8,6 +8,7 @@ function App() {
   let [query, setQuery] = useState("");
   let [open, setOpen] = useState(false);
   let [user, setUser] = useState([]);
+  let [hasError, setError] = useState(false);
 
 
   const [sortColumn, setSortColumn] = useState('');
@@ -57,6 +58,8 @@ function App() {
     fetch("https://jsonplaceholder.typicode.com/users").then((res) => res.json()).then(json => {
       setUsers(() => json);
       setFiltered(() => json);
+    }).catch((err)=> {
+      setError(true);
     })
   }
 
@@ -76,7 +79,7 @@ function App() {
         <input type="button" value="Fetch Data" onClick={fetchData} />
       </header>
       <main>
-        <table>
+       {!hasError && <table>
           <thead>
             <tr>
               <th onClick={() => sortData('name')}>NAME {sortColumn === 'name' && (sortDirection === 'asc' ? '▲' : '▼')}</th>
@@ -100,8 +103,8 @@ function App() {
                       <td>{user["username"]}</td>
                       <td>{user["email"]}</td>
                       <td>{user["phone"]}</td>
-                      <td>{user["address"]["city"]}</td>
-                      <td>{user["company"]["name"]}</td>
+                      <td>{user["address"]?.city || "N/A"}</td>
+                      <td>{user["company"]?.name || "N/A"}</td>
                     </tr>
                   )
                 }
@@ -128,7 +131,10 @@ function App() {
               </Box>
             )}
           </Modal>
-        </table>
+        </table>}
+        {hasError && (
+          <h1>Sorry! Unable to fetch data from API</h1>
+        )}
       </main>
     </div>
   );
