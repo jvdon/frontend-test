@@ -10,9 +10,27 @@ function App() {
   let [user, setUser] = useState([]);
   let [hasError, setError] = useState(false);
 
-
   const [sortColumn, setSortColumn] = useState('');
   const [sortDirection, setSortDirection] = useState('asc');
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  function getPaginatedData() {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filtered.slice(startIndex, endIndex);
+  }
+
+  function goToPage(page) {
+    setCurrentPage(page);
+  }
+  
+  function getTotalPages() {
+    return Math.ceil(filtered.length / itemsPerPage);
+  }
+
+  
 
   const style = {
     position: 'absolute',
@@ -91,26 +109,39 @@ function App() {
             </tr>
           </thead>
           <tbody>
-            {
-              filtered.map(user => {
-                if (user !== undefined) {
-                  return (
-                    <tr onClick={() => {
-                      setUser(user);
-                      setOpen(true)
-                    }}>
-                      <td>{user["name"]}</td>
-                      <td>{user["username"]}</td>
-                      <td>{user["email"]}</td>
-                      <td>{user["phone"]}</td>
-                      <td>{user["address"]?.city || "N/A"}</td>
-                      <td>{user["company"]?.name || "N/A"}</td>
-                    </tr>
-                  )
-                }
-              })
-            }
+          {
+                getPaginatedData().map(user => (
+                  <tr key={user.id} onClick={() => {
+                    setUser(user);
+                    setOpen(true);
+                  }}>
+                    <td>{user["name"]}</td>
+                    <td>{user["username"]}</td>
+                    <td>{user["email"]}</td>
+                    <td>{user["phone"]}</td>
+                    <td>{user["address"]?.city || "N/A"}</td>
+                    <td>{user["company"]?.name || "N/A"}</td>
+                  </tr>
+                ))
+              }
           </tbody>
+
+          <div className="pagination">
+            <button 
+              onClick={() => goToPage(Math.max(1, currentPage - 1))} 
+              disabled={currentPage === 1}
+            >
+              Previous
+            </button>
+            <span>Page {currentPage} of {getTotalPages()}</span>
+            <button 
+              onClick={() => goToPage(Math.min(getTotalPages(), currentPage + 1))} 
+              disabled={currentPage === getTotalPages()}
+            >
+              Next
+            </button>
+          </div>
+          
           <Modal
             open={open && user !== undefined}
             onClose={() => { setOpen(false) }}
